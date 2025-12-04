@@ -1,0 +1,18 @@
+{
+  "@@locale": "hi",
+
+  "language": "हिंदी",
+  "@language": {
+    "description": "The current language"
+  },
+
+  "helloWorld": "नमस्ते दुनिया",
+  "@helloWorld": {
+    "description": "A programmer greeting"
+  },
+
+  "multiLanguage": "बहु भाषा",
+  "@multiLanguage": {
+    "description": "App title"
+  }
+}

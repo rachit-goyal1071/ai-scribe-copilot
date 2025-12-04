@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: medinote-backend
+    environment:
+      DB_URL: postgresql://postgres:postgres@db:5432/medinote
+      OPENAI_API_KEY: ""
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  minio:
+    image: minio/minio:latest
+    container_name: medinote-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 endpoint
+      - "9001:9001"   # Console
+    volumes:
+      - minio_data:/data
+
+
+  db:
+    image: postgres:15
+    container_name: medinote-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: medinote
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+  minio_data:
