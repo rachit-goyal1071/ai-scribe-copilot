@@ -2,9 +2,9 @@ from minio import Minio
 import os
 from datetime import timedelta
 
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "minio:9000")
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "142.93.211.149:9000")
 
-PUBLIC_MINIO_ENDPOINT = os.getenv("PUBLIC_MINIO_ENDPOINT", "minio:9000")
+PUBLIC_MINIO_ENDPOINT = os.getenv("PUBLIC_MINIO_ENDPOINT", "142.93.211.149:9000")
 
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minio")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minio123")
