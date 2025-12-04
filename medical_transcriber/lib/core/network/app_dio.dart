@@ -5,8 +5,8 @@ class AppDio {
   static final AppDio _instance = AppDio._internal();
   factory AppDio() => _instance;
 
-  final baseUrl = 'http://192.168.29.101:8000';
-  final String backendUrl = "http://192.168.29.101:8000";
+  final baseUrl = 'http://127.0.0.1:8000';
+  final String backendUrl = "http://127.0.0.1:8000/";
 
   late final Dio dio;
 

@@ -1,68 +1,130 @@
 import Flutter
 import AVFoundation
 
-class NativeAudioPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
+@objc(NativeAudioPlugin)
+class NativeAudioPlugin: NSObject, FlutterPlugin {
 
-    static let shared = NativeAudioPlugin()
+    // EventChannel sinks
+    static var audioLevelSink: FlutterEventSink?
+    static var routeSink: FlutterEventSink?
+    static var chunkSink: FlutterEventSink?
 
-    private var eventSink: FlutterEventSink?
-    private var routeSink: FlutterEventSink?
-    private var bufferSink: FlutterEventSink?
-
-    static func register(with registrar: FlutterPluginRegistrar) {
+    // Required registration entry point
+    public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = NativeAudioPlugin()
 
-        let methodChannel = FlutterMethodChannel(name: "native_audio_channel", binaryMessenger: registrar.messenger())
+        // Method channel
+        let methodChannel = FlutterMethodChannel(
+            name: "native_audio_channel",
+            binaryMessenger: registrar.messenger()
+        )
         registrar.addMethodCallDelegate(instance, channel: methodChannel)
 
-        let eventChannel = FlutterEventChannel(name: "native_audio_levels", binaryMessenger: registrar.messenger())
-        eventChannel.setStreamHandler(instance)
+        // Audio level stream
+        let levelChannel = FlutterEventChannel(
+            name: "native_audio_levels",
+            binaryMessenger: registrar.messenger()
+        )
+        levelChannel.setStreamHandler(AudioLevelStreamHandler())
 
-        let routeChannel = FlutterEventChannel(name: "native_audio_routes", binaryMessenger: registrar.messenger())
-        routeChannel.setStreamHandler(instance)
+        // Route change stream
+        let routeChannel = FlutterEventChannel(
+            name: "native_audio_routes",
+            binaryMessenger: registrar.messenger()
+        )
+        routeChannel.setStreamHandler(AudioRouteStreamHandler())
 
-        let bufferChannel = FlutterEventChannel(name: "native_audio_buffers", binaryMessenger: registrar.messenger())
-        bufferChannel.setStreamHandler(instance)
+        // Chunk events stream
+        let bufferChannel = FlutterEventChannel(
+            name: "native_audio_buffers",
+            binaryMessenger: registrar.messenger()
+        )
+        bufferChannel.setStreamHandler(AudioChunkStreamHandler())
     }
 
+    // Handle method calls from Dart
     func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "startRecording":
             if let args = call.arguments as? [String: Any],
             let sessionId = args["sessionId"] as? String {
-                try? NativeAudioManager.shared.startRecording(sessionId: sessionId)
-                result(nil)
+                do {
+                    try NativeAudioManager.shared.startRecording(sessionId: sessionId)
+                    result(nil)
+                } catch {
+                    result(
+                        FlutterError(
+                            code: "START_ERROR",
+                            message: error.localizedDescription,
+                            details: nil
+                        )
+                    )
+                }
             } else {
-                result(FlutterError(code: "INVALID_ARGUMENTS", message: "Missing sessionId", details: nil))
+                result(
+                    FlutterError(
+                        code: "INVALID_ARGUMENTS",
+                        message: "Missing sessionId",
+                        details: nil
+                    )
+                )
             }
+
         case "pauseRecording":
             NativeAudioManager.shared.pauseRecording()
             result(nil)
+
         case "resumeRecording":
             NativeAudioManager.shared.resumeRecording()
             result(nil)
+
         case "stopRecording":
             if let args = call.arguments as? [String: Any],
             let isLast = args["isLast"] as? Bool {
                 NativeAudioManager.shared.stopRecording(isLast: isLast)
             }
             result(nil)
+
         default:
             result(FlutterMethodNotImplemented)
         }
     }
 
-    func emitAudioLevel(level: Float) {
-        levelSink?(level)
+    // MARK: - Helpers used by NativeAudioManager / ChunkedAudioRecorder
+
+    /// Called from NativeAudioManager.emitLevel(...)
+    static func emitAudioLevel(_ level: Float) {
+        // Flutter can handle Double/NSNumber
+        audioLevelSink?(Double(level))
     }
 
-    func emitChunkEvent(fileUrl: URL, chunkNumber: Int, isLast: Bool) {
-        let event: [String: Any] = [
-            "filePath": fileUrl.absoluteString,
+    /// Called from NativeAudioManager.handleRouteChange(...)
+    static func emitRouteChange(_ route: String) {
+        routeSink?(["route": route])
+    }
+
+    /// Called from NativeAudioManager.finalizeChunk(...)
+    static func emitChunkEvent(url: URL, chunkNumber: Int, isLast: Bool) {
+        let payload: [String: Any] = [
+            "filePath": url.path,        // or url.absoluteString if you prefer
             "chunkNumber": chunkNumber,
             "isLast": isLast
         ]
-        bufferSink?(event)
+        chunkSink?(payload)
+    }
+
+    // Legacy names used by ChunkedAudioRecorder (so it compiles without change)
+    static func sendLevel(_ value: Double) {
+        audioLevelSink?(value)
+    }
+
+    static func sendChunk(filePath: String, chunkNumber: Int, isLast: Bool) {
+        let payload: [String: Any] = [
+            "filePath": filePath,
+            "chunkNumber": chunkNumber,
+            "isLast": isLast
+        ]
+        chunkSink?(payload)
     }
 }
 
@@ -71,6 +133,7 @@ class AudioLevelStreamHandler: NSObject, FlutterStreamHandler {
         NativeAudioPlugin.audioLevelSink = events
         return nil
     }
+
     func onCancel(withArguments arguments: Any?) -> FlutterError? {
         NativeAudioPlugin.audioLevelSink = nil
         return nil
@@ -82,6 +145,7 @@ class AudioChunkStreamHandler: NSObject, FlutterStreamHandler {
         NativeAudioPlugin.chunkSink = events
         return nil
     }
+
     func onCancel(withArguments arguments: Any?) -> FlutterError? {
         NativeAudioPlugin.chunkSink = nil
         return nil
@@ -93,6 +157,7 @@ class AudioRouteStreamHandler: NSObject, FlutterStreamHandler {
         NativeAudioPlugin.routeSink = events
         return nil
     }
+
     func onCancel(withArguments arguments: Any?) -> FlutterError? {
         NativeAudioPlugin.routeSink = nil
         return nil
