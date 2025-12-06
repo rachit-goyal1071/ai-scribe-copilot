@@ -1,18 +1,40 @@
 {
   "@@locale": "hi",
 
-  "language": "हिंदी",
-  "@language": {
-    "description": "The current language"
-  },
+  "settings": "सेटिंग्स",
+  "appearance": "दिखावट",
+  "darkMode": "डार्क मोड",
+  "lightMode": "लाइट मोड",
+  "systemDefault": "सिस्टम डिफ़ॉल्ट",
 
-  "helloWorld": "नमस्ते दुनिया",
-  "@helloWorld": {
-    "description": "A programmer greeting"
-  },
+  "patients": "मरीज़",
+  "error": "त्रुटि",
+  "noPatientsFound": "कोई मरीज़ नहीं मिला।",
+  "noPatientsYet": "अभी तक कोई मरीज़ नहीं",
+  "tapToAddPatient": "+ बटन दबाकर पहला मरीज़ जोड़ें।",
 
-  "multiLanguage": "बहु भाषा",
-  "@multiLanguage": {
-    "description": "App title"
-  }
+    "patientDetails": "मरीज़ विवरण",
+    "session": "सत्र",
+    "loadingSummary": "सारांश लोड हो रहा है...",
+    "noDetailsAvailable": "कोई विवरण उपलब्ध नहीं है।",
+    "noSessionsYet": "अभी तक कोई सत्र नहीं",
+    "startNewRecording": "नीचे दिए गए माइक बटन का उपयोग करके नया रिकॉर्डिंग शुरू करें।",
+
+     "addPatient": "मरीज़ जोड़ें",
+      "patientName": "मरीज़ का नाम",
+      "nameCannotBeEmpty": "नाम खाली नहीं हो सकता",
+      "savePatient": "मरीज़ को सहेजें",
+
+      "recordingTitle": "रिकॉर्डिंग",
+        "paused": "रोक दिया गया",
+        "listening": "सुन रहा है...",
+        "audioLevel": "ऑडियो स्तर",
+        "resume": "फिर से शुरू करें",
+        "pause": "रोकें",
+        "stopRecording": "रिकॉर्डिंग बंद करें",
+        "chunksReceived": "प्राप्त खंड",
+
+  "language": "भाषा",
+  "english": "अंग्रेज़ी",
+  "hindi": "हिंदी"
 }

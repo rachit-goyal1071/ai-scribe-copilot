@@ -98,23 +98,191 @@ abstract class AppLocalizations {
     Locale('hi'),
   ];
 
-  /// The current language
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @lightMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Mode'**
+  String get lightMode;
+
+  /// No description provided for @systemDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get systemDefault;
+
+  /// No description provided for @patients.
+  ///
+  /// In en, this message translates to:
+  /// **'Patients'**
+  String get patients;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @noPatientsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No patients found.'**
+  String get noPatientsFound;
+
+  /// No description provided for @noPatientsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Patients Yet'**
+  String get noPatientsYet;
+
+  /// No description provided for @tapToAddPatient.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the + button to add your first patient.'**
+  String get tapToAddPatient;
+
+  /// No description provided for @patientDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient Details'**
+  String get patientDetails;
+
+  /// No description provided for @session.
+  ///
+  /// In en, this message translates to:
+  /// **'Session'**
+  String get session;
+
+  /// No description provided for @loadingSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading summary...'**
+  String get loadingSummary;
+
+  /// No description provided for @noDetailsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No details available.'**
+  String get noDetailsAvailable;
+
+  /// No description provided for @noSessionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Sessions Yet'**
+  String get noSessionsYet;
+
+  /// No description provided for @startNewRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a new recording using the mic button below.'**
+  String get startNewRecording;
+
+  /// No description provided for @addPatient.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Patient'**
+  String get addPatient;
+
+  /// No description provided for @patientName.
+  ///
+  /// In en, this message translates to:
+  /// **'Patient Name'**
+  String get patientName;
+
+  /// No description provided for @nameCannotBeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Name cannot be empty'**
+  String get nameCannotBeEmpty;
+
+  /// No description provided for @savePatient.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Patient'**
+  String get savePatient;
+
+  /// No description provided for @recordingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get recordingTitle;
+
+  /// No description provided for @paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get paused;
+
+  /// No description provided for @listening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening...'**
+  String get listening;
+
+  /// No description provided for @audioLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Level'**
+  String get audioLevel;
+
+  /// No description provided for @resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resume;
+
+  /// No description provided for @pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pause;
+
+  /// No description provided for @stopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop Recording'**
+  String get stopRecording;
+
+  /// No description provided for @chunksReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Chunks Received'**
+  String get chunksReceived;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @english.
   ///
   /// In en, this message translates to:
   /// **'English'**
-  String get language;
+  String get english;
 
-  /// A programmer greeting
+  /// No description provided for @hindi.
   ///
   /// In en, this message translates to:
-  /// **'Hello World'**
-  String get helloWorld;
-
-  /// App title
-  ///
-  /// In en, this message translates to:
-  /// **'Multi Language'**
-  String get multiLanguage;
+  /// **'Hindi'**
+  String get hindi;
 }
 
 class _AppLocalizationsDelegate

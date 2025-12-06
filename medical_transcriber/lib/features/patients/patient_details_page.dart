@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medical_transcriber/presentation/bloc/patient_bloc/patient_bloc.dart';
+import 'package:medical_transcriber/l10n/app_localizations.dart';
 
 class PatientDetailsPage extends StatelessWidget {
   final String patientId;
@@ -13,6 +14,7 @@ class PatientDetailsPage extends StatelessWidget {
     );
 
     final theme = Theme.of(context);
+    final t = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -25,7 +27,7 @@ class PatientDetailsPage extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Patient Details"),
+          title: Text(t.patientDetails),
         ),
 
         floatingActionButton: FloatingActionButton(
@@ -47,7 +49,7 @@ class PatientDetailsPage extends StatelessWidget {
               final sessions = state.sessions;
 
               if (sessions.isEmpty) {
-                return _buildEmptyState(theme);
+                return _buildEmptyState(theme, t);
               }
 
               return ListView.separated(
@@ -59,7 +61,7 @@ class PatientDetailsPage extends StatelessWidget {
 
                   return InkWell(
                     borderRadius: BorderRadius.circular(16),
-                    onTap: () {}, // You can add session details navigation here
+                    onTap: () {},
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -94,14 +96,14 @@ class PatientDetailsPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Session ${session.id}",
+                                  "${t.session} ${session.id}",
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  session.sessionSummary ?? "Loading summary...",
+                                  session.sessionSummary ?? t.loadingSummary,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -124,7 +126,7 @@ class PatientDetailsPage extends StatelessWidget {
             if (state is PatientErrorState) {
               return Center(
                 child: Text(
-                  'Error: ${state.message}',
+                  '${t.error}: ${state.message}',
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.error,
                   ),
@@ -132,14 +134,14 @@ class PatientDetailsPage extends StatelessWidget {
               );
             }
 
-            return const Center(child: Text("No details available."));
+            return Center(child: Text(t.noDetailsAvailable));
           },
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState(ThemeData theme, AppLocalizations t) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -151,16 +153,20 @@ class PatientDetailsPage extends StatelessWidget {
               size: 80,
               color: theme.colorScheme.primary.withOpacity(0.5),
             ),
+
             const SizedBox(height: 16),
+
             Text(
-              "No Sessions Yet",
+              t.noSessionsYet,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 8),
+
             Text(
-              "Start a new recording using the mic button below.",
+              t.startNewRecording,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
               ),

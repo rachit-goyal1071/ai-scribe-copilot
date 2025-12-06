@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medical_transcriber/presentation/bloc/setting_bloc/settings_cubit.dart';
+import 'package:medical_transcriber/l10n/app_localizations.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -8,10 +9,11 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final setting = context.watch<SettingsCubit>().state;
+    final t = AppLocalizations.of(context)!; // shortcut
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(t.settings),
       ),
 
       body: ListView(
@@ -20,7 +22,7 @@ class SettingsPage extends StatelessWidget {
 
           // ------------------ THEME SECTION ------------------
           Text(
-            "Appearance",
+            t.appearance,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -34,7 +36,7 @@ class SettingsPage extends StatelessWidget {
                 _buildTile(
                   context,
                   icon: Icons.dark_mode,
-                  title: "Dark Mode",
+                  title: t.darkMode,
                   value: ThemeMode.dark,
                   groupValue: setting.themeMode,
                   onChanged: (v) =>
@@ -44,7 +46,7 @@ class SettingsPage extends StatelessWidget {
                 _buildTile(
                   context,
                   icon: Icons.light_mode,
-                  title: "Light Mode",
+                  title: t.lightMode,
                   value: ThemeMode.light,
                   groupValue: setting.themeMode,
                   onChanged: (v) =>
@@ -54,7 +56,7 @@ class SettingsPage extends StatelessWidget {
                 _buildTile(
                   context,
                   icon: Icons.phone_android,
-                  title: "System Default",
+                  title: t.systemDefault,
                   value: ThemeMode.system,
                   groupValue: setting.themeMode,
                   onChanged: (v) =>
@@ -68,7 +70,7 @@ class SettingsPage extends StatelessWidget {
 
           // ------------------ LANGUAGE SECTION ------------------
           Text(
-            "Language",
+            t.language,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -82,7 +84,7 @@ class SettingsPage extends StatelessWidget {
                 _buildLanguageTile(
                   context,
                   icon: Icons.language,
-                  title: "English",
+                  title: t.english,
                   code: "en",
                   current: setting.locale.languageCode,
                 ),
@@ -90,7 +92,7 @@ class SettingsPage extends StatelessWidget {
                 _buildLanguageTile(
                   context,
                   icon: Icons.translate,
-                  title: "Hindi",
+                  title: t.hindi,
                   code: "hi",
                   current: setting.locale.languageCode,
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../presentation/bloc/recording_bloc/recording_bloc.dart';
 import '../../presentation/bloc/user_bloc/user_bloc.dart';
+import 'package:medical_transcriber/l10n/app_localizations.dart';
 
 class RecordingPage extends StatefulWidget {
   final String patientId;
@@ -53,6 +54,8 @@ class _RecordingPageState extends State<RecordingPage>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return BlocBuilder<RecordingBloc, RecordingState>(
       builder: (context, state) {
         final level = state.audioLevel.clamp(0.0, 1.0);
@@ -60,7 +63,7 @@ class _RecordingPageState extends State<RecordingPage>
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text("Recording"),
+            title: Text(t.recordingTitle),
             elevation: 0,
           ),
 
@@ -102,8 +105,8 @@ class _RecordingPageState extends State<RecordingPage>
                   // ---------------- STATUS TEXT ----------------
                   Text(
                     status == RecordingStatus.paused
-                        ? "Paused"
-                        : "Listening...",
+                        ? t.paused
+                        : t.listening,
                     style: Theme.of(context)
                         .textTheme
                         .headlineMedium
@@ -112,13 +115,13 @@ class _RecordingPageState extends State<RecordingPage>
 
                   const SizedBox(height: 8),
                   Text(
-                    "Audio Level: ${(level * 100).toInt()}%",
+                    "${t.audioLevel}: ${(level * 100).toInt()}%",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
 
                   const SizedBox(height: 24),
 
-                  // ---------------- LINEAR LEVEL BAR ----------------
+                  // ---------------- LEVEL BAR ----------------
                   LinearProgressIndicator(
                     value: level,
                     minHeight: 10,
@@ -137,7 +140,7 @@ class _RecordingPageState extends State<RecordingPage>
                               .read<RecordingBloc>()
                               .add(ResumeRecordingEvent()),
                           icon: const Icon(Icons.play_arrow_rounded),
-                          label: const Text("Resume"),
+                          label: Text(t.resume),
                         )
                       else if (status == RecordingStatus.recording)
                         FilledButton.icon(
@@ -145,7 +148,7 @@ class _RecordingPageState extends State<RecordingPage>
                               .read<RecordingBloc>()
                               .add(PauseRecordingEvent()),
                           icon: const Icon(Icons.pause_rounded),
-                          label: const Text("Pause"),
+                          label: Text(t.pause),
                         ),
                     ],
                   ),
@@ -158,7 +161,7 @@ class _RecordingPageState extends State<RecordingPage>
                       foregroundColor: Colors.redAccent,
                     ),
                     icon: const Icon(Icons.stop_rounded),
-                    label: const Text("Stop Recording"),
+                    label: Text(t.stopRecording),
                     onPressed: () {
                       context
                           .read<RecordingBloc>()
@@ -170,7 +173,7 @@ class _RecordingPageState extends State<RecordingPage>
                   const Spacer(),
 
                   Text(
-                    "Chunks Received: ${state.receivedChunks.length}",
+                    "${t.chunksReceived}: ${state.receivedChunks.length}",
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium

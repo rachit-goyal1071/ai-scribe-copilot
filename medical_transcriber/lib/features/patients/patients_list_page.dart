@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medical_transcriber/main.dart';
 import 'package:medical_transcriber/presentation/bloc/patient_bloc/patient_bloc.dart';
 import 'package:medical_transcriber/presentation/bloc/user_bloc/user_bloc.dart';
+import 'package:medical_transcriber/l10n/app_localizations.dart';
 
 class PatientsListPage extends StatefulWidget {
   const PatientsListPage({super.key});
@@ -23,6 +24,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final t = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -30,7 +32,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
         appBar: AppBar(
           leadingWidth: 0,
           leading: const SizedBox.shrink(),
-          title: const Text('Patients'),
+          title: Text(t.patients),
           centerTitle: false,
           actions: [
             IconButton(
@@ -55,7 +57,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
               final patients = state.patients;
 
               if (patients.isEmpty) {
-                return _buildEmptyState(theme);
+                return _buildEmptyState(theme, t);
               }
 
               return ListView.separated(
@@ -123,7 +125,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
             if (state is PatientErrorState) {
               return Center(
                 child: Text(
-                  'Error: ${state.message}',
+                  '${t.error}: ${state.message}',
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.error,
                   ),
@@ -131,14 +133,14 @@ class _PatientsListPageState extends State<PatientsListPage> {
               );
             }
 
-            return const Center(child: Text('No patients found.'));
+            return Center(child: Text(t.noPatientsFound));
           },
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState(ThemeData theme, AppLocalizations t) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -149,14 +151,14 @@ class _PatientsListPageState extends State<PatientsListPage> {
                 size: 80, color: theme.colorScheme.primary.withOpacity(0.5)),
             const SizedBox(height: 16),
             Text(
-              "No Patients Yet",
+              t.noPatientsYet,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              "Tap the + button to add your first patient.",
+              t.tapToAddPatient,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.grey,
               ),

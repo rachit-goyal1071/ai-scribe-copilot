@@ -38,6 +38,7 @@ class AppRouter {
         final arguments = args as Map<String, String>;
         return MaterialPageRoute(
           builder: (_) => RecordingPage(
+
             patientId: arguments['patientId']!,
             templateId: "",
           ),

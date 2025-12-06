@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medical_transcriber/presentation/bloc/patient_bloc/patient_bloc.dart';
 import 'package:medical_transcriber/presentation/bloc/user_bloc/user_bloc.dart';
+import 'package:medical_transcriber/l10n/app_localizations.dart';
 
 class AddPatientPage extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
@@ -13,21 +14,23 @@ class AddPatientPage extends StatelessWidget {
     final userId =
         (context.read<UserBloc>().state as UserLoadedSuccessState).userId;
 
+    final t = AppLocalizations.of(context)!;
+
     return BlocListener<PatientBloc, PatientState>(
       listener: (context, state) {
         if (state is PatientCreatedState) {
           Navigator.pop(context);
         } else if (state is PatientErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
+            SnackBar(content: Text("${t.error}: ${state.message}")),
           );
         }
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: true, // important
+        resizeToAvoidBottomInset: true,
 
         appBar: AppBar(
-          title: const Text('Add Patient'),
+          title: Text(t.addPatient),
         ),
 
         body: SafeArea(
@@ -35,14 +38,14 @@ class AddPatientPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Stack(
               children: [
-                // ---------- FORM ----------
+                // ------------ FORM ------------
                 SingleChildScrollView(
                   padding: const EdgeInsets.only(bottom: 80),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Patient Details",
+                        t.patientDetails,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 12),
@@ -50,7 +53,7 @@ class AddPatientPage extends StatelessWidget {
                       TextField(
                         controller: nameController,
                         decoration: InputDecoration(
-                          labelText: "Patient Name",
+                          labelText: t.patientName,
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -61,7 +64,7 @@ class AddPatientPage extends StatelessWidget {
                   ),
                 ),
 
-                // ---------- FLOATING BOTTOM BUTTON ----------
+                // ------------ FLOATING SAVE BUTTON ------------
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
@@ -75,8 +78,7 @@ class AddPatientPage extends StatelessWidget {
 
                           if (name.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text("Name cannot be empty")),
+                              SnackBar(content: Text(t.nameCannotBeEmpty)),
                             );
                             return;
                           }
@@ -85,7 +87,7 @@ class AddPatientPage extends StatelessWidget {
                             AddPatientEvent(name: name, userId: userId),
                           );
                         },
-                        child: const Text("Save Patient"),
+                        child: Text(t.savePatient),
                       ),
                     ),
                   ),

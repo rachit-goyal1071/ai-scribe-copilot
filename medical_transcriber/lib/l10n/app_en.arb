@@ -1,18 +1,40 @@
 {
   "@@locale": "en",
 
-  "language": "English",
-  "@language": {
-    "description": "The current language"
-  },
+  "settings": "Settings",
+  "appearance": "Appearance",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+  "systemDefault": "System Default",
 
-  "helloWorld": "Hello World",
-  "@helloWorld": {
-    "description": "A programmer greeting"
-  },
+  "patients": "Patients",
+  "error": "Error",
+  "noPatientsFound": "No patients found.",
+  "noPatientsYet": "No Patients Yet",
+  "tapToAddPatient": "Tap the + button to add your first patient.",
 
-  "multiLanguage": "Multi Language",
-  "@multiLanguage": {
-    "description": "App title"
-  }
+  "patientDetails": "Patient Details",
+  "session": "Session",
+  "loadingSummary": "Loading summary...",
+  "noDetailsAvailable": "No details available.",
+  "noSessionsYet": "No Sessions Yet",
+  "startNewRecording": "Start a new recording using the mic button below.",
+
+  "addPatient": "Add Patient",
+    "patientName": "Patient Name",
+    "nameCannotBeEmpty": "Name cannot be empty",
+    "savePatient": "Save Patient",
+
+    "recordingTitle": "Recording",
+      "paused": "Paused",
+      "listening": "Listening...",
+      "audioLevel": "Audio Level",
+      "resume": "Resume",
+      "pause": "Pause",
+      "stopRecording": "Stop Recording",
+      "chunksReceived": "Chunks Received",
+
+  "language": "Language",
+  "english": "English",
+  "hindi": "Hindi"
 }
