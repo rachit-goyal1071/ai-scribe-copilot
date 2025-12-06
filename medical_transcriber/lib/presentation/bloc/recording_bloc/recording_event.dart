@@ -16,7 +16,6 @@ class StartRecordingEvent extends RecordingEvent {
     required this.patientName,
     required this.templateId,
   });
-
 }
 
 class PauseRecordingEvent extends RecordingEvent {}

@@ -41,15 +41,17 @@ class NativeAudioPlugin(
 
         methodChannel.setMethodCallHandler(this)
 
-        levelChannel.setStreamHandler(object : EventChannel.StreamHandler {
-            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                levelSink = events
-            }
+//        levelChannel.setStreamHandler(object : EventChannel.StreamHandler {
+//            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+//                levelSink = events
+//            }
+//
+//            override fun onCancel(arguments: Any?) {
+//                levelSink = null
+//            }
+//        })
 
-            override fun onCancel(arguments: Any?) {
-                levelSink = null
-            }
-        })
+        levelChannel.setStreamHandler(AudioLevelStreamHandler)
 
         routeChannel.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
@@ -93,6 +95,7 @@ class NativeAudioPlugin(
 
             "stopRecording" -> {
                 val isLast = call.argument<Boolean>("isLast") ?: true
+                recorder?.pause()
                 pluginScope.launch {
                     recorder?.stop(isLast)
                     result.success(null)
@@ -105,10 +108,10 @@ class NativeAudioPlugin(
 
     fun emitAudioLevel(level: Double) {
         Handler(Looper.getMainLooper()).post {
-            levelSink?.success(level)
+//            levelSink?.success(level)
+            AudioLevelStreamHandler.sendLevel(level)
         }
     }
-
 
     fun emitRouteChange(route: String) {
         Handler(Looper.getMainLooper()).post {

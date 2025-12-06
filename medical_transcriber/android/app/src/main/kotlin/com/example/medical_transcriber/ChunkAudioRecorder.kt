@@ -18,27 +18,21 @@ class ChunkAudioRecorder(
     private val sessionId: String
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
-
-    private var audioRecord: AudioRecord? = null
     private var recordingJob: Job? = null
 
-    @Volatile
-    private var isRecording = false
-    @Volatile
-    private var isPaused = false
+    private var audioRecord: AudioRecord? = null
+    private var currentStream: FileOutputStream? = null
+
+    @Volatile private var isRecording = false
+    @Volatile private var isPaused = false
 
     private var chunkNumber = 1
+    private val chunkDurationMs = 5000L
 
     private val sampleRate = 16000
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO
     private val encoding = AudioFormat.ENCODING_PCM_16BIT
-    private val chunkDurationMs = 5000L
-
-    private val bufferSize = AudioRecord.getMinBufferSize(
-        sampleRate,
-        channelConfig,
-        encoding
-    )
+    private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, encoding)
 
     private lateinit var currentChunkFile: File
     private val pcmBuffer = ByteArrayOutputStream()
@@ -60,28 +54,22 @@ class ChunkAudioRecorder(
         audioRecord?.startRecording()
         startNewChunk()
 
-        // keep the job so we can join it on stop()
         recordingJob = scope.launch { readAudioLoop() }
     }
 
-    fun pause() {
-        isPaused = true
-    }
-
-    fun resume() {
-        isPaused = false
-    }
+    fun pause() { isPaused = true }
+    fun resume() { isPaused = false }
 
     suspend fun stop(isLast: Boolean) {
-        // signal loop to finish
         isRecording = false
 
-        // wait for the loop to exit so no more writes happen
+        // Wait for loop thread to exit
         recordingJob?.join()
         recordingJob = null
 
         try {
             finalizeWavChunk()
+
             if (isLast) {
                 NativeAudioPlugin.instance.emitChunkEvent(
                     mapOf(
@@ -91,12 +79,19 @@ class ChunkAudioRecorder(
                     )
                 )
             }
-        } catch (_: Exception) {
-        }
+        } catch (_: Exception) { }
 
+        currentStream?.close()
         audioRecord?.stop()
         audioRecord?.release()
         audioRecord = null
+    }
+
+    private fun normalizeDb(db: Double): Double {
+        val minDb = -60.0
+        val maxDb = -5.0
+        val clipped = db.coerceIn(minDb, maxDb)
+        return (clipped - minDb) / (maxDb - minDb)
     }
 
     private suspend fun readAudioLoop() {
@@ -104,27 +99,31 @@ class ChunkAudioRecorder(
         var lastSplitTime = System.currentTimeMillis()
 
         while (isRecording) {
+
             if (isPaused) {
-                delay(50)
+                delay(20)
                 continue
             }
 
-            val read = audioRecord?.read(buffer, 0, buffer.size) ?: 0
-            if (read <= 0) continue
+            val count = audioRecord?.read(buffer, 0, buffer.size) ?: 0
+            if (count <= 0) continue
 
-            // write to in-memory buffer (no open file stream here)
-            pcmBuffer.write(buffer, 0, read)
+            // Write into file output stream
+            currentStream?.write(buffer, 0, count)
 
-            // audio level for UI
-            val level = calculateRms(buffer, read)
-            NativeAudioPlugin.instance.emitAudioLevel(level)
+            // Store into PCM buffer for full WAV rewrite
+            pcmBuffer.write(buffer, 0, count)
 
+            // Send audio level
+            val level = calculateRms(buffer, count)
+            val normalized = normalizeDb(level)
+            NativeAudioPlugin.instance.emitAudioLevel(normalized)
+
+            // Split chunks
             val now = System.currentTimeMillis()
             if (now - lastSplitTime >= chunkDurationMs) {
-                // finalize current chunk to disk
                 finalizeWavChunk()
 
-                // notify Flutter
                 NativeAudioPlugin.instance.emitChunkEvent(
                     mapOf(
                         "filePath" to currentChunkFile.absolutePath,
@@ -146,11 +145,22 @@ class ChunkAudioRecorder(
 
         currentChunkFile = File(root, "chunk_$chunkNumber.wav")
         pcmBuffer.reset()
+
+        currentStream = FileOutputStream(currentChunkFile)
+        writePlaceholderHeader()
+    }
+
+    private fun writePlaceholderHeader() {
+        val header = ByteArray(44)
+        currentStream?.write(header)
     }
 
     private fun finalizeWavChunk() {
         val pcmData = pcmBuffer.toByteArray()
         if (pcmData.isEmpty()) return
+
+        currentStream?.flush()
+        currentStream?.close()
 
         val totalAudioLen = pcmData.size.toLong()
         val totalDataLen = totalAudioLen + 36
@@ -163,36 +173,31 @@ class ChunkAudioRecorder(
         pcmBuffer.reset()
     }
 
-    private fun writeWavHeader(
-        out: FileOutputStream,
-        audioLen: Long,
-        dataLen: Long
-    ) {
+    private fun writeWavHeader(out: FileOutputStream, audioLen: Long, dataLen: Long) {
         val channels = 1
         val byteRate = sampleRate * 2 * channels
 
         val header = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN)
-
         header.put("RIFF".toByteArray())
         header.putInt(dataLen.toInt())
         header.put("WAVE".toByteArray())
         header.put("fmt ".toByteArray())
-        header.putInt(16)                 // Subchunk1Size for PCM
-        header.putShort(1)                // AudioFormat = PCM
+        header.putInt(16)
+        header.putShort(1)
         header.putShort(channels.toShort())
         header.putInt(sampleRate)
         header.putInt(byteRate)
-        header.putShort((2 * channels).toShort()) // BlockAlign
-        header.putShort(16)               // BitsPerSample
+        header.putShort((2 * channels).toShort())
+        header.putShort(16)
         header.put("data".toByteArray())
         header.putInt(audioLen.toInt())
 
         out.write(header.array())
     }
 
-    private fun calculateRms(data: ByteArray, validBytes: Int): Double {
+    private fun calculateRms(data: ByteArray, valid: Int): Double {
         var sumSq = 0.0
-        val samples = validBytes / 2
+        val samples = valid / 2
         if (samples == 0) return -120.0
 
         for (i in 0 until samples) {

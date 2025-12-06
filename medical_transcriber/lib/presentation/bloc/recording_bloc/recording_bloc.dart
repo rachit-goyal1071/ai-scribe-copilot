@@ -106,7 +106,7 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
       StopRecordingEvent event,
       Emitter<RecordingState> emit,
       ) async {
-    if (hasStopped) return; // prevent double stop
+    if (hasStopped) return;
     hasStopped = true;
 
     emit(state.copyWith(status: RecordingStatus.stopping));
@@ -139,7 +139,6 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
 
     local.addChunk(chunk);
 
-    // 2. For UI/debugging: update in-memory list too
     final updated = List<Map<String, dynamic>>.from(state.receivedChunks)
       ..add({
         "filePath": event.filePath,

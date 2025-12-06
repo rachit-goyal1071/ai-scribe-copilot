@@ -13,13 +13,9 @@ object AudioChunkStreamHandler : EventChannel.StreamHandler {
         sink = null
     }
 
-    fun sendChunk(filePath: String, chunkNumber: Int, isLast: Boolean) {
-        val map = hashMapOf<String, Any>(
-            "filePath" to filePath,
-            "chunkNumber" to chunkNumber,
-            "isLast" to isLast
-        )
-        sink?.success(map)
+    fun sendChunk(payload: Map<String, Any>) {
+        sink?.success(payload)
     }
 }
+
 
