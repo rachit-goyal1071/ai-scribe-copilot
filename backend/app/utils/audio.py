@@ -1,3 +1,5 @@
+import io
+import wave
 from minio import Minio
 import os
 
@@ -13,16 +15,32 @@ client = Minio(
     secure=False
 )
 
+
 def combine_chunks(session_id: str, chunks: list):
-    """
-    chunks: List of SessionChunk objects
-    Returns: path to combined WAV file
-    """
     output_path = f"/tmp/{session_id}_combined.wav"
 
-    with open(output_path, "wb") as outfile:
-        for ch in chunks:
-            data = client.get_object(MINIO_BUCKET, ch.gcs_path)
-            outfile.write(data.read())
+    # Read first chunk fully to extract WAV params
+    first_data = client.get_object(MINIO_BUCKET, chunks[0].gcs_path).read()
+    first_wav = wave.open(io.BytesIO(first_data), 'rb')
+
+    params = first_wav.getparams()
+    sample_width = first_wav.getsampwidth()
+    channels = first_wav.getnchannels()
+    framerate = first_wav.getframerate()
+
+    # Create output WAV
+    with wave.open(output_path, 'wb') as out_wav:
+        out_wav.setnchannels(channels)
+        out_wav.setsampwidth(sample_width)
+        out_wav.setframerate(framerate)
+
+        # Write PCM from first chunk
+        out_wav.writeframes(first_wav.readframes(first_wav.getnframes()))
+
+        # Write PCM from other chunks
+        for ch in chunks[1:]:
+            data = client.get_object(MINIO_BUCKET, ch.gcs_path).read()
+            wav = wave.open(io.BytesIO(data), 'rb')
+            out_wav.writeframes(wav.readframes(wav.getnframes()))
 
     return output_path

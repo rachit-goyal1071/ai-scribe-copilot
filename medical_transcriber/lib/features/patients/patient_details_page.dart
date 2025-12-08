@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:medical_transcriber/presentation/bloc/patient_bloc/patient_bloc.dart';
 import 'package:medical_transcriber/l10n/app_localizations.dart';
 
@@ -15,6 +16,7 @@ class PatientDetailsPage extends StatelessWidget {
 
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
+    final player = AudioPlayer();
 
     return PopScope(
       canPop: false,
@@ -60,7 +62,9 @@ class PatientDetailsPage extends StatelessWidget {
                   final session = sessions[index];
                   return InkWell(
                     borderRadius: BorderRadius.circular(16),
-                    onTap: () {},
+                    onTap: () async{
+                      showAudioPlayerDialog(context, session.id);
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -176,4 +180,92 @@ class PatientDetailsPage extends StatelessWidget {
       ),
     );
   }
+}
+
+
+Future<void> showAudioPlayerDialog(BuildContext context, String sessionId) async {
+  final player = AudioPlayer();
+  final url = "http://142.93.211.149:8000/v1/session-audio/$sessionId";
+
+  await player.setUrl(url);
+
+  showDialog(
+    context: context,
+    builder: (_) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Session Audio"),
+        content: StreamBuilder<Duration?>(
+          stream: player.durationStream,
+          builder: (context, snapshotDuration) {
+            final total = snapshotDuration.data ?? Duration.zero;
+
+            return StreamBuilder<Duration>(
+              stream: player.positionStream,
+              builder: (context, snapshotPosition) {
+                final position = snapshotPosition.data ?? Duration.zero;
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // --- Slider ---
+                    Slider(
+                      value: position.inSeconds.toDouble(),
+                      min: 0,
+                      max: total.inSeconds.toDouble(),
+                      onChanged: (value) {
+                        player.seek(Duration(seconds: value.toInt()));
+                      },
+                    ),
+
+                    // --- Time Info ---
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(_formatDuration(position)),
+                        Text(_formatDuration(total)),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // --- Play / Pause button ---
+                    StreamBuilder<PlayerState>(
+                      stream: player.playerStateStream,
+                      builder: (context, snapshotState) {
+                        final playing = snapshotState.data?.playing ?? false;
+
+                        return IconButton(
+                          iconSize: 50,
+                          icon: Icon(playing ? Icons.pause_circle : Icons.play_circle),
+                          onPressed: () {
+                            playing ? player.pause() : player.play();
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              player.dispose();
+              Navigator.pop(context);
+            },
+            child: const Text("Close"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+String _formatDuration(Duration d) {
+  final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return "$minutes:$seconds";
 }

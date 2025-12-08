@@ -80,6 +80,7 @@ def add_chunk(db: Session, payload: dict):
         public_url=payload["publicUrl"],
         is_last=payload["isLast"]
     )
+    print(chunk)
     db.add(chunk)
     db.commit()
     db.refresh(chunk)

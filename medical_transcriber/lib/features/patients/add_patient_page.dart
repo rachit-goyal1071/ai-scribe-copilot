@@ -19,7 +19,7 @@ class AddPatientPage extends StatelessWidget {
     return BlocListener<PatientBloc, PatientState>(
       listener: (context, state) {
         if (state is PatientCreatedState) {
-          Navigator.pop(context);
+          Navigator.pushNamed(context, '/patients');
         } else if (state is PatientErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("${t.error}: ${state.message}")),

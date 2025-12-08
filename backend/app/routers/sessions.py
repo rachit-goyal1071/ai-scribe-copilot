@@ -1,4 +1,6 @@
-from fastapi import APIRouter, BackgroundTasks, Depends
+import os
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app import crud, schemas
@@ -40,10 +42,6 @@ def get_presigned(payload: dict):
         "publicUrl": public_url
     }
 
-
-@router.post("/notify-chunk-uploaded")
-def notify(payload: dict):
-    return {}
 
 
 @router.get("/all-session")
@@ -117,3 +115,42 @@ def process_session_audio(session_id: str, db_session):
     db_session.commit()
 
     print(f"[PIPELINE] Session {session_id} transcription completed.")
+
+
+@router.get("/session-audio/{session_id}", response_class=FileResponse)
+def get_session_audio(session_id: str, db: Session = Depends(get_db)):
+    # 1. Fetch chunks
+    chunks = crud.get_chunks_for_session(db, session_id)
+    print("CHUNKS FOUND:", len(chunks))
+    for c in chunks:
+        print(c.chunk_number, c.gcs_path)
+
+    if not chunks or len(chunks) == 0:
+        raise HTTPException(status_code=404, detail="No audio chunks found for this session.")
+
+    # 2. Combine chunks into temp file
+    try:
+        combined_path = combine_chunks(session_id, chunks)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to combine chunks: {str(e)}")
+
+    # 3. Return file
+    # FileResponse automatically sets correct headers for download/stream
+    response = FileResponse(
+        combined_path,
+        media_type="audio/wav",
+        filename=f"{session_id}.wav"
+    )
+
+    # 4. Optional: remove file after response is sent
+    # FastAPI workaround: background task
+    from fastapi import BackgroundTasks
+    def cleanup_file(path: str):
+        if os.path.exists(path):
+            os.remove(path)
+
+    tasks = BackgroundTasks()
+    tasks.add_task(cleanup_file, combined_path)
+    response.background = tasks
+
+    return response

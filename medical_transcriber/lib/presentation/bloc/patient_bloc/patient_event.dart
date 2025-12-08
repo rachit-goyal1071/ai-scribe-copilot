@@ -23,3 +23,8 @@ class LoadPatientSessionsEvent extends PatientEvent {
   final String patientId;
   LoadPatientSessionsEvent({required this.patientId});
 }
+
+class LoadSessionRecordingsEvent extends PatientEvent {
+  final String sessionId;
+  LoadSessionRecordingsEvent({required this.sessionId});
+}
