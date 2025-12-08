@@ -58,7 +58,6 @@ class PatientDetailsPage extends StatelessWidget {
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final session = sessions[index];
-
                   return InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {},
