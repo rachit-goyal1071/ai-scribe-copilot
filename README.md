@@ -23,8 +23,8 @@ https://docs.google.com/document/d/1hzfry0fg7qQQb39cswEychYMtBiBKDAqIg6LamAKENI/
 https://drive.google.com/file/d/1rnEjRzH64ESlIi5VQekG525Dsf8IQZTP/view?usp=sharing
 
 ### 🌐 Backend Deployment URL
-http://142.93.211.149:8000  
-Swagger Docs → http://142.93.211.149:8000/docs
+http://142.93.213.55:8000  
+Swagger Docs → http://142.93.213.55:8000/docs
 
 ---
 

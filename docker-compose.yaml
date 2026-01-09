@@ -6,7 +6,7 @@ services:
     container_name: medinote-backend
     environment:
       DB_URL: postgresql://postgres:postgres@db:5432/medinote
-      OPENAI_API_KEY: ""
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     ports:
       - "8000:8000"
     depends_on:

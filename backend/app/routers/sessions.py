@@ -60,6 +60,7 @@ def all_session(userId: str, db: Session = Depends(get_db)):
         "patientMap": patient_map
     }
 
+
 @router.post("/notify-chunk-uploaded")
 def notify(payload: dict, background: BackgroundTasks, db: Session = Depends(get_db)):
 
@@ -81,46 +82,80 @@ def notify(payload: dict, background: BackgroundTasks, db: Session = Depends(get
 
     # 3. All chunks received → Set to "processing"
     session = db.query(models.Session).filter(models.Session.id == payload["sessionId"]).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
     session.status = "processing"
     db.commit()
 
-    # 4. Launch background job
-    background.add_task(process_session_audio, payload["sessionId"], db)
+    # 4. Launch background job (use its own DB session)
+    background.add_task(process_session_audio, payload["sessionId"])
 
     return {"status": "processing_started"}
 
-def process_session_audio(session_id: str, db_session):
-    """
-    This runs asynchronously:
+
+def process_session_audio(session_id: str):
+    """Background pipeline:
     - Combine chunks
     - Transcribe audio
     - Save transcript
-    - Mark session as completed
+    - Mark session as completed/failed
+
+    Note: This function manages its own DB session.
     """
     print(f"[PIPELINE] Starting processing for {session_id}")
 
-    # 1. Fetch chunks again
-    chunks = crud.get_chunks_for_session(db_session, session_id)
+    db_session = SessionLocal()
+    try:
+        session = db_session.query(models.Session).filter(models.Session.id == session_id).first()
+        if not session:
+            print(f"[PIPELINE] Session not found: {session_id}")
+            return
 
-    # 2. Combine chunks
-    combined_path = combine_chunks(session_id, chunks)
+        # 1. Fetch chunks
+        chunks = crud.get_chunks_for_session(db_session, session_id)
+        if not chunks:
+            session.status = "failed"
+            db_session.commit()
+            print(f"[PIPELINE] No chunks found for {session_id}")
+            return
 
-    # 3. Transcribe using OpenAI
-    transcript_text = transcribe_audio(combined_path)
+        # 2. Combine chunks
+        combined_path = combine_chunks(session_id, chunks)
 
-    # 4. Save transcript in session DB
-    session = db_session.query(models.Session).filter(models.Session.id == session_id).first()
-    session.transcript = transcript_text
-    session.status = "completed"
-    db_session.commit()
+        # 3. Transcribe using OpenAI
+        transcript_text = transcribe_audio(combined_path)
 
-    print(f"[PIPELINE] Session {session_id} transcription completed.")
+        # 4. Save transcript in session DB
+        session.transcript = transcript_text
+        session.status = "completed"
+        db_session.commit()
+
+        print(f"[PIPELINE] Session {session_id} transcription completed.")
+
+    except Exception as e:
+        # Best-effort failure marking
+        try:
+            session = db_session.query(models.Session).filter(models.Session.id == session_id).first()
+            if session:
+                session.status = "failed"
+                db_session.commit()
+        except Exception:
+            pass
+
+        print(f"[PIPELINE] Session {session_id} processing failed: {e}")
+
+    finally:
+        db_session.close()
 
 
 @router.get("/session-transcript/{session_id}")
 def get_session_transcript(session_id: str, db: Session = Depends(get_db)):
-    session = process_session_audio(db, session_id)
-    return {"transcript": session.transcript}
+    session = db.query(models.Session).filter(models.Session.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {"transcript": session.transcript, "status": session.status}
 
 
 @router.get("/session-audio/{session_id}", response_class=FileResponse)
