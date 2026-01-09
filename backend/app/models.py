@@ -26,6 +26,7 @@ class Session(Base):
     start_time = Column(String)
     end_time = Column(String, nullable=True)
     transcript = Column(Text, nullable=True)
+    session_error = Column(Text, nullable=True)
 
 class SessionChunk(Base):
     __tablename__ = "session_chunks"

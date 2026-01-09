@@ -113,22 +113,31 @@ def process_session_audio(session_id: str):
             print(f"[PIPELINE] Session not found: {session_id}")
             return
 
+        # Clear previous error (if any)
+        session.session_error = None
+        db_session.commit()
+
         # 1. Fetch chunks
         chunks = crud.get_chunks_for_session(db_session, session_id)
+        print(f"[PIPELINE] chunks={len(chunks)} for {session_id}")
         if not chunks:
             session.status = "failed"
+            session.session_error = "No chunks found for session"
             db_session.commit()
             print(f"[PIPELINE] No chunks found for {session_id}")
             return
 
         # 2. Combine chunks
         combined_path = combine_chunks(session_id, chunks)
+        print(f"[PIPELINE] combined wav: {combined_path}")
 
         # 3. Transcribe using OpenAI (force English output)
         transcript_text = transcribe_audio(combined_path, language="en")
+        print(f"[PIPELINE] transcript chars={len(transcript_text or '')}")
 
         # 4. Generate a fully-detailed English summary (always English)
         detailed_summary = generate_detailed_english_summary(transcript_text)
+        print(f"[PIPELINE] summary chars={len(detailed_summary or '')}")
 
         # 5. Save transcript + summary
         session.transcript = transcript_text
@@ -144,6 +153,7 @@ def process_session_audio(session_id: str):
             session = db_session.query(models.Session).filter(models.Session.id == session_id).first()
             if session:
                 session.status = "failed"
+                session.session_error = str(e)
                 db_session.commit()
         except Exception:
             pass
@@ -165,9 +175,11 @@ def get_session_transcript(session_id: str, db: Session = Depends(get_db)):
         "transcript": session.transcript,
         "session_summary": session.session_summary,
         "status": session.status,
+        "session_error": getattr(session, "session_error", None),
         # camelCase convenience
         "sessionTranscript": session.transcript,
         "sessionSummary": session.session_summary,
+        "sessionError": getattr(session, "session_error", None),
     }
 
 
