@@ -161,11 +161,13 @@ def get_session_transcript(session_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Session not found")
 
     return {
-        # Backwards compatible keys
+        # snake_case (matches SessionModel.fromJson currently)
         "transcript": session.transcript,
-        "summary": session.session_summary,
+        "session_summary": session.session_summary,
         "status": session.status,
-        # Client-friendly keys
+        # camelCase convenience
+        "sessionTranscript": session.transcript,
+        "sessionSummary": session.session_summary,
     }
 
 

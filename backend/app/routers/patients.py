@@ -40,4 +40,21 @@ def patient_details(patientId: str, db: Session = Depends(get_db)):
 @router.get("/fetch-session-by-patient/{patientId}")
 def fetch_session(patientId: str, db: Session = Depends(get_db)):
     sessions = crud.get_sessions_for_patient(db, patientId)
-    return {"sessions": sessions} 
+
+    # Serialize explicitly so keys match what the mobile client expects.
+    sessions_out = [
+        {
+            "id": s.id,
+            "user_id": s.user_id,
+            "patient_id": s.patient_id,
+            "status": s.status,
+            "session_title": s.session_title,
+            "session_summary": s.session_summary,
+            "start_time": s.start_time,
+            "end_time": s.end_time,
+            "transcript": s.transcript,
+        }
+        for s in sessions
+    ]
+
+    return {"sessions": sessions_out}
