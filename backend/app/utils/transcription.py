@@ -24,6 +24,7 @@ def transcribe_audio(
     *,
     model: Optional[str] = None,
     response_format: TranscriptionResponseFormat = "text",
+    language: str = "en",
 ) -> str:
     """Transcribe an audio file and return transcript text.
 
@@ -32,6 +33,7 @@ def transcribe_audio(
         model: OpenAI transcription model name. Defaults to env OPENAI_TRANSCRIBE_MODEL
                or "gpt-4o-mini-transcribe".
         response_format: OpenAI response format. "text" returns plain text.
+        language: Force transcription language (default: "en").
 
     Returns:
         Transcript as a string.
@@ -52,12 +54,61 @@ def transcribe_audio(
         result = client.audio.transcriptions.create(
             model=chosen_model,
             file=audio_file,
+            language=language,
             response_format=cast(object, response_format),
         )
 
-    # For response_format="text" the SDK returns a string.
     if isinstance(result, str):
         return result
 
-    # Defensive: if response_format is changed later.
     return getattr(result, "text", str(result))
+
+
+def generate_detailed_english_summary(
+    transcript_text: str,
+    *,
+    model: Optional[str] = None,
+) -> str:
+    """Generate a fully detailed English summary from transcript text.
+
+    This step is intentionally separate from transcription because:
+    - transcription may be partial
+    - transcript may not be English
+    - you want a structured, detailed English output
+    """
+    api_key = _get_openai_api_key()
+    client = OpenAI(api_key=api_key)
+
+    chosen_model = model or os.getenv("OPENAI_SUMMARY_MODEL", "gpt-4o-mini")
+
+    prompt = (
+        "You are a medical scribe. You will be given an audio transcript that may be incomplete "
+        "and may contain non-English text.\n\n"
+        "Requirements:\n"
+        "- Always output in ENGLISH.\n"
+        "- If the transcript is not English, translate it first.\n"
+        "- Produce a fully detailed, structured note with headings.\n"
+        "- If the transcript seems cut off or too short, explicitly say what is missing/uncertain.\n\n"
+        "Return format (headings):\n"
+        "1) Chief complaint\n"
+        "2) HPI\n"
+        "3) ROS\n"
+        "4) Medications\n"
+        "5) Allergies\n"
+        "6) PMH/PSH\n"
+        "7) Assessment\n"
+        "8) Plan\n\n"
+        f"Transcript:\n{transcript_text}\n"
+    )
+
+    # Use the Responses API for general text generation.
+    resp = client.responses.create(
+        model=chosen_model,
+        input=prompt,
+    )
+
+    output_text = getattr(resp, "output_text", None)
+    if isinstance(output_text, str) and output_text.strip():
+        return output_text
+
+    return str(resp)

@@ -6,7 +6,7 @@ from app.database import SessionLocal
 from app import crud, schemas
 from app.utils.audio import combine_chunks
 from app.utils.storage import get_presigned_upload
-from app.utils.transcription import transcribe_audio
+from app.utils.transcription import transcribe_audio, generate_detailed_english_summary
 from app import models
 
 router = APIRouter(prefix="/v1", tags=["Sessions"])
@@ -98,7 +98,8 @@ def process_session_audio(session_id: str):
     """Background pipeline:
     - Combine chunks
     - Transcribe audio
-    - Save transcript
+    - Generate English detailed summary
+    - Save transcript+summary
     - Mark session as completed/failed
 
     Note: This function manages its own DB session.
@@ -123,15 +124,19 @@ def process_session_audio(session_id: str):
         # 2. Combine chunks
         combined_path = combine_chunks(session_id, chunks)
 
-        # 3. Transcribe using OpenAI
-        transcript_text = transcribe_audio(combined_path)
+        # 3. Transcribe using OpenAI (force English output)
+        transcript_text = transcribe_audio(combined_path, language="en")
 
-        # 4. Save transcript in session DB
+        # 4. Generate a fully-detailed English summary (always English)
+        detailed_summary = generate_detailed_english_summary(transcript_text)
+
+        # 5. Save transcript + summary
         session.transcript = transcript_text
+        session.session_summary = detailed_summary
         session.status = "completed"
         db_session.commit()
 
-        print(f"[PIPELINE] Session {session_id} transcription completed.")
+        print(f"[PIPELINE] Session {session_id} transcription+summary completed.")
 
     except Exception as e:
         # Best-effort failure marking
@@ -155,7 +160,13 @@ def get_session_transcript(session_id: str, db: Session = Depends(get_db)):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    return {"transcript": session.transcript, "status": session.status}
+    return {
+        # Backwards compatible keys
+        "transcript": session.transcript,
+        "summary": session.session_summary,
+        "status": session.status,
+        # Client-friendly keys
+    }
 
 
 @router.get("/session-audio/{session_id}", response_class=FileResponse)
