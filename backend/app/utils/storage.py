@@ -3,7 +3,6 @@ import os
 from datetime import timedelta
 
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "142.93.213.55:9000")
-
 PUBLIC_MINIO_ENDPOINT = os.getenv("PUBLIC_MINIO_ENDPOINT", "142.93.213.55:9000")
 
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minio")
@@ -17,15 +16,19 @@ client = Minio(
     secure=False
 )
 
-# Ensure bucket exists
-if not client.bucket_exists(MINIO_BUCKET):
-    client.make_bucket(MINIO_BUCKET)
+
+def _ensure_bucket_exists() -> None:
+    # MinIO may not be reachable at import/startup time (especially in local dev).
+    # Ensure the bucket exists only when we actually need to generate a URL.
+    if not client.bucket_exists(MINIO_BUCKET):
+        client.make_bucket(MINIO_BUCKET)
 
 
 def get_presigned_upload(gcs_path: str):
     """
     gcs_path example: sessions/sessionId/chunk_1.wav
     """
+    _ensure_bucket_exists()
 
     MINIO_ANDROID_URL = os.getenv("MINIO_ANDROID_URL", "142.93.213.55:9000")
 

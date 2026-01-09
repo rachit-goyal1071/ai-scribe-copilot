@@ -113,6 +113,11 @@ def process_session_audio(session_id: str):
             print(f"[PIPELINE] Session not found: {session_id}")
             return
 
+        # Avoid double-processing if multiple notify calls arrive
+        if session.status == "completed" and session.session_summary:
+            print(f"[PIPELINE] Session {session_id} already completed; skipping reprocessing")
+            return
+
         # Clear previous error (if any)
         session.session_error = None
         db_session.commit()
@@ -145,7 +150,10 @@ def process_session_audio(session_id: str):
         session.status = "completed"
         db_session.commit()
 
-        print(f"[PIPELINE] Session {session_id} transcription+summary completed.")
+        print(
+            f"[PIPELINE] Session {session_id} transcription+summary completed. "
+            f"transcript_chars={len(transcript_text or '')} summary_chars={len(detailed_summary or '')}"
+        )
 
     except Exception as e:
         # Best-effort failure marking
@@ -220,3 +228,22 @@ def get_session_audio(session_id: str, db: Session = Depends(get_db)):
     response.background = tasks
 
     return response
+
+
+@router.get("/debug/session/{session_id}")
+def debug_session(session_id: str, db: Session = Depends(get_db)):
+    """Debug endpoint to inspect stored session fields.
+
+    Useful when the mobile client shows nulls and we need to confirm what is actually in DB.
+    """
+    session = db.query(models.Session).filter(models.Session.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "id": session.id,
+        "status": session.status,
+        "transcript": session.transcript,
+        "session_summary": session.session_summary,
+        "session_error": getattr(session, "session_error", None),
+    }
