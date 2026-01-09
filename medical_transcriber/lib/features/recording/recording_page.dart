@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../presentation/bloc/patient_bloc/patient_bloc.dart';
 import '../../presentation/bloc/recording_bloc/recording_bloc.dart';
 import '../../presentation/bloc/user_bloc/user_bloc.dart';
 import 'package:medical_transcriber/l10n/app_localizations.dart';
@@ -166,6 +167,9 @@ class _RecordingPageState extends State<RecordingPage>
                       context
                           .read<RecordingBloc>()
                           .add(StopRecordingEvent(isLast: true));
+                      context.read<PatientBloc>().add(
+                        LoadPatientSessionsEvent(patientId: widget.patientId),
+                      );
                       Navigator.pop(context);
                     },
                   ),

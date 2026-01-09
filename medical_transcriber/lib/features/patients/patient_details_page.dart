@@ -4,6 +4,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:medical_transcriber/presentation/bloc/patient_bloc/patient_bloc.dart';
 import 'package:medical_transcriber/l10n/app_localizations.dart';
 
+import '../../core/router/router.dart';
+
 class PatientDetailsPage extends StatelessWidget {
   final String patientId;
   const PatientDetailsPage({super.key, required this.patientId});
@@ -16,7 +18,6 @@ class PatientDetailsPage extends StatelessWidget {
 
     final theme = Theme.of(context);
     final t = AppLocalizations.of(context)!;
-    final player = AudioPlayer();
 
     return PopScope(
       canPop: false,
@@ -63,7 +64,11 @@ class PatientDetailsPage extends StatelessWidget {
                   return InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () async{
-                      showAudioPlayerDialog(context, session.id);
+                      Navigator.pushNamed(
+                        context,
+                        AppRouter.sessionDetails,
+                        arguments: session,
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(16),
@@ -185,7 +190,7 @@ class PatientDetailsPage extends StatelessWidget {
 
 Future<void> showAudioPlayerDialog(BuildContext context, String sessionId) async {
   final player = AudioPlayer();
-  final url = "http://142.93.211.149:8000/v1/session-audio/$sessionId";
+  final url = "http://142.93.213.55:8000/v1/session-audio/$sessionId";
 
   await player.setUrl(url);
 

@@ -4,6 +4,8 @@ import 'package:medical_transcriber/presentation/bloc/patient_bloc/patient_bloc.
 import 'package:medical_transcriber/presentation/bloc/user_bloc/user_bloc.dart';
 import 'package:medical_transcriber/l10n/app_localizations.dart';
 
+import '../../main.dart';
+
 class AddPatientPage extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
 
@@ -11,7 +13,7 @@ class AddPatientPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId =
+    final userId = userIdMain ??
         (context.read<UserBloc>().state as UserLoadedSuccessState).userId;
 
     final t = AppLocalizations.of(context)!;
@@ -19,7 +21,8 @@ class AddPatientPage extends StatelessWidget {
     return BlocListener<PatientBloc, PatientState>(
       listener: (context, state) {
         if (state is PatientCreatedState) {
-          Navigator.pushNamed(context, '/patients');
+          context.read<PatientBloc>().add(LoadPatientEvent(userId: userIdMain!));
+          Navigator.pop(context);
         } else if (state is PatientErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("${t.error}: ${state.message}")),

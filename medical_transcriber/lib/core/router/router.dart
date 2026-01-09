@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:medical_transcriber/domain/models/session_model.dart';
 import 'package:medical_transcriber/features/login/login_page.dart';
 import 'package:medical_transcriber/features/patients/add_patient_page.dart';
 import 'package:medical_transcriber/features/patients/patient_details_page.dart';
 import 'package:medical_transcriber/features/patients/patients_list_page.dart';
 import 'package:medical_transcriber/features/sessions/all_session_page.dart';
+import 'package:medical_transcriber/features/sessions/session_details_page.dart';
 import 'package:medical_transcriber/features/settings/settings_page.dart';
 
 import '../../features/recording/recording_page.dart';
@@ -17,6 +19,7 @@ class AppRouter {
   static const templatePicker = '/template-picker';
   static const recording = '/recording';
   static const allSession = '/all-sessions';
+  static const sessionDetails = '/session-details';
   static const settings = '/settings';
 
   static Route<dynamic> onGeneratedRoute(RouteSettings routeSettings) {
@@ -47,6 +50,25 @@ class AppRouter {
       case allSession:
         return MaterialPageRoute(
           builder: (_) => AllSessionPage()
+        );
+
+      case sessionDetails:
+        if (args is SessionModel) {
+          return MaterialPageRoute(
+            builder: (_) => SessionDetailsPage(session: args),
+          );
+        }
+
+        final sessionId = args as String;
+        return MaterialPageRoute(
+          builder: (_) => SessionDetailsPage(
+            session: SessionModel(
+              id: sessionId,
+              userId: '',
+              patientId: '',
+              startTime: DateTime.now().toIso8601String(),
+            ),
+          ),
         );
 
       case settings:

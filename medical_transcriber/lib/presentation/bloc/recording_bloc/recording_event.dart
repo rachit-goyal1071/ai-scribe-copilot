@@ -58,3 +58,4 @@ class AudioRouteChangedEvent extends RecordingEvent {
   @override
   List<Object?> get props => [route];
 }
+

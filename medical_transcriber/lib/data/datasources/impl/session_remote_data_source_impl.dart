@@ -7,7 +7,7 @@ class SessionRemoteDataSourceImpl implements SessionRemoteDataSource {
   @override
   Future<List<dynamic>> getAllSessions(String userId) async {
     final response = await _dio.client.get(
-      '/v1/all-sessions',
+      '/v1/all-session',
       queryParameters: {"userId": userId},
     );
     return response.data["sessions"];

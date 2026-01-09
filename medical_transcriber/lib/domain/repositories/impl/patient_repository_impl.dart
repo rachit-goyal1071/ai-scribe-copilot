@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:medical_transcriber/domain/repositories/patient_repository.dart';
 import '../../../data/datasources/patient_remote_data_source.dart';
 import '../../models/patient.dart';
@@ -23,7 +24,6 @@ class PatientRepositoryImpl implements PatientRepository {
   @override
   Future<Patient> getPatientsDetails(String patientId) async {
     final patient = await remote.getPatientDetails(patientId);
-    print('PatientRepositoryImpl.getPatientsDetails patient: $patient');
     return Patient.fromJson(patient);
   }
 
@@ -31,10 +31,21 @@ class PatientRepositoryImpl implements PatientRepository {
   Future<List<SessionModel>> getPatientSessions(String patientId) async {
     final sessions = await remote.getPatientSessions(patientId);
     try {
-      print('PatientRepositoryImpl.getPatientSessions sessions: ${sessions.map((e) => SessionModel.fromJson(e)).toList()}');
+      return sessions.map((e) => SessionModel.fromJson(e)).toList();
     } catch (e) {
-      print('Error parsing sessions: $e');
+      if (kDebugMode) {
+        debugPrint('PatientRepositoryImpl: error parsing sessions: $e');
+      }
+      rethrow;
     }
-    return sessions.map((e) => SessionModel.fromJson(e)).toList();
+  }
+
+  @override
+  Future<String> getPatientTranscription(String sessionId) {
+    try {
+      return remote.getPatientTranscription(sessionId);
+    } catch (e) {
+      throw Exception('Failed to get patient transcription: $e');
+    }
   }
 }

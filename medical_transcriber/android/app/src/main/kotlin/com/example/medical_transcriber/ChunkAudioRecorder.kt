@@ -80,7 +80,7 @@ class ChunkAudioRecorder(
                 )
             }
         } catch (_: Exception) { }
-
+        print("Recorder STOP: file=${currentChunkFile.name}, chunkNumber=$chunkNumber")
         currentStream?.close()
         audioRecord?.stop()
         audioRecord?.release()

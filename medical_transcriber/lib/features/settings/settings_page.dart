@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medical_transcriber/core/router/router.dart';
 import 'package:medical_transcriber/presentation/bloc/setting_bloc/settings_cubit.dart';
 import 'package:medical_transcriber/l10n/app_localizations.dart';
 
@@ -19,6 +20,24 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // ------------------ NAVIGATION ------------------
+          Material(
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.history),
+                  title: const Text('All Sessions'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.pushNamed(context, AppRouter.allSession),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
 
           // ------------------ THEME SECTION ------------------
           Text(

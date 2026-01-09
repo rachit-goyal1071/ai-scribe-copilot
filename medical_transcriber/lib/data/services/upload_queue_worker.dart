@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:medical_transcriber/data/local/chunk_local_data_source.dart';
 import 'package:medical_transcriber/domain/repositories/recording_repository.dart';
 
@@ -63,11 +64,16 @@ class UploadQueueWorker {
         chunk.mimeType,
       );
 
-      print(presignedUrl);
+      if (kDebugMode) {
+        debugPrint(
+          'UploadQueueWorker: presigned url received for session=${chunk.sessionId} chunk=${chunk.chunkNumber}',
+        );
+      }
+
       final uploadUrl = presignedUrl['url'];
       final publicUrl = presignedUrl['publicUrl'];
       final gcsPath = presignedUrl['gcsPath'];
-      
+
       final bytes = await File(chunk.filePath).readAsBytes();
 
       final response = await dio.put(
@@ -77,7 +83,12 @@ class UploadQueueWorker {
           headers: {"Content-Type": chunk.mimeType},
         ),
       );
-      print(response.statusCode);
+
+      if (kDebugMode) {
+        debugPrint(
+          'UploadQueueWorker: upload response=${response.statusCode} session=${chunk.sessionId} chunk=${chunk.chunkNumber}',
+        );
+      }
 
       await recordingRepo.notifyChunkUploaded(
         sessionId: chunk.sessionId,
@@ -94,10 +105,11 @@ class UploadQueueWorker {
 
       chunk.status = ChunkStatus.uploaded;
       await local.updateChunk(chunk);
-
     } catch (e) {
       chunk.retryCount++;
-      print("Upload failed for chunk ${chunk.id}: $e");
+      if (kDebugMode) {
+        debugPrint('UploadQueueWorker: upload failed chunk=${chunk.id} err=$e');
+      }
       if (chunk.retryCount >= 3) {
         chunk.status = ChunkStatus.giveUp;
       } else {

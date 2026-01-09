@@ -46,6 +46,7 @@ dependencies:
   hive_flutter: ^1.1.0
   equatable: ^2.0.7
   just_audio: ^0.10.5
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   hive_generator: ^2.0.0

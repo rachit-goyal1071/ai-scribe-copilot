@@ -43,6 +43,7 @@ class LoginPage extends StatelessWidget {
                       "Welcome Back",
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: Colors.black87
                       ),
                     ),
                     const SizedBox(height: 8),

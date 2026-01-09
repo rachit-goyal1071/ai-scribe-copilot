@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medical_transcriber/core/router/router.dart';
 import 'package:medical_transcriber/main.dart';
 import 'package:medical_transcriber/presentation/bloc/patient_bloc/patient_bloc.dart';
 import 'package:medical_transcriber/presentation/bloc/user_bloc/user_bloc.dart';
@@ -36,14 +37,19 @@ class _PatientsListPageState extends State<PatientsListPage> {
           centerTitle: false,
           actions: [
             IconButton(
+              tooltip: 'All Sessions',
+              icon: const Icon(Icons.history),
+              onPressed: () => Navigator.pushNamed(context, AppRouter.allSession),
+            ),
+            IconButton(
               icon: const Icon(Icons.settings),
-              onPressed: () => Navigator.pushNamed(context, '/settings'),
+              onPressed: () => Navigator.pushNamed(context, AppRouter.settings),
             ),
           ],
         ),
 
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, '/add-patient'),
+          onPressed: () => Navigator.pushNamed(context, AppRouter.addPatient),
           child: const Icon(Icons.add),
         ),
 
@@ -72,7 +78,7 @@ class _PatientsListPageState extends State<PatientsListPage> {
                     onTap: () {
                       Navigator.pushNamed(
                         context,
-                        '/patient-details',
+                        AppRouter.patientDetails,
                         arguments: patient.id,
                       );
                     },

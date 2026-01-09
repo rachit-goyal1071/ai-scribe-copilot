@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:medical_transcriber/data/datasources/recording_remote_data_source.dart';
 
 import '../../../core/network/app_dio.dart';
@@ -70,6 +72,8 @@ class RecordingRemoteDataSourceImpl implements RecordingRemoteDataSource {
         "selectedTemplateId": selectedTemplateId,
         "model": model
       });
-    print("Chunk upload notified: ${response.data}");
+    if (kDebugMode) {
+      debugPrint("Chunk upload notified: ${response.data}");
+    }
   }
 }

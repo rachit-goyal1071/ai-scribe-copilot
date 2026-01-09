@@ -78,9 +78,17 @@ class NativeAudioPlugin(
         when (call.method) {
             "startRecording" -> {
                 val sessionId = call.argument<String>("sessionId")!!
-                recorder = ChunkAudioRecorder(context, sessionId)
-                recorder?.start()
-                result.success(null)
+
+                pluginScope.launch {
+                    // safely stop previous recorder if exists
+                    recorder = null
+
+                    // create new recorder for new session
+                    recorder = ChunkAudioRecorder(context, sessionId)
+                    recorder?.start()
+
+                    result.success(null)
+                }
             }
 
             "pauseRecording" -> {
@@ -98,6 +106,7 @@ class NativeAudioPlugin(
                 recorder?.pause()
                 pluginScope.launch {
                     recorder?.stop(isLast)
+                    recorder = null
                     result.success(null)
                 }
             }
@@ -125,3 +134,4 @@ class NativeAudioPlugin(
         }
     }
 }
+

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:medical_transcriber/main.dart';
 import 'package:meta/meta.dart';
 
@@ -24,7 +25,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       userIdMain = user.value;
       emit(UserLoadedSuccessState(user.value));
     } catch (e) {
-      print('error in user bloc: $e');
+      if (kDebugMode) {
+        debugPrint('UserBloc: fetchUserId failed: $e');
+      }
       emit(UserErrorState(e.toString()));
     }
   }

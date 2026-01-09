@@ -9,4 +9,6 @@ abstract class PatientRepository {
   Future<Patient> getPatientsDetails(String patientId);
 
   Future<List<SessionModel>> getPatientSessions(String patientId);
+
+  Future<String> getPatientTranscription(String sessionId);
 }

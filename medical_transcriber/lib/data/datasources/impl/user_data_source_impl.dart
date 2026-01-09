@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:medical_transcriber/core/network/app_dio.dart';
 import '../user_remote_data_source.dart';
 
@@ -10,7 +12,9 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       '/users/asd3fd2faec',
       queryParameters: {"email": email},
     );
-    print('UserRemoteDataSourceImpl.getUserIdByEmail response: ${response.data}');
+    if (kDebugMode) {
+      debugPrint('UserRemoteDataSourceImpl.getUserIdByEmail response: ${response.data}');
+    }
     return response.data['id'].toString();
   }
 }

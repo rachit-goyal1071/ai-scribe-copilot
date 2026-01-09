@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:medical_transcriber/domain/models/patient.dart';
 import 'package:medical_transcriber/domain/models/session_model.dart';
 import 'package:medical_transcriber/domain/repositories/patient_repository.dart';
@@ -31,7 +32,9 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
   FutureOr<void> addPatientEvent(AddPatientEvent event, Emitter<PatientState> emit) async {
     emit(PatientLoadingState());
     try {
-      print('Adding patient for userId: ${event.userId} with name: ${event.name}');
+      if (kDebugMode) {
+        debugPrint('PatientBloc: creating patient userId=${event.userId} name=${event.name}');
+      }
       final patient = await repo.createPatient(event.name, event.userId);
       emit(PatientCreatedState(patient: patient));
     } catch (e) {
@@ -54,7 +57,9 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     emit(PatientLoadingState());
     try {
       final sessions = await repo.getPatientSessions(event.patientId);
-      print('Loaded ${sessions.length} sessions for patientId: ${event.patientId}');
+      if (kDebugMode) {
+        debugPrint('PatientBloc: loaded sessions count=${sessions.length} patientId=${event.patientId}');
+      }
       emit(PatientsSessionsLoadedState(sessions: sessions));
     } catch (e) {
       emit(PatientErrorState(message: e.toString()));

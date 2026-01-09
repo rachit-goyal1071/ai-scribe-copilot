@@ -6,4 +6,6 @@ abstract class PatientRemoteDataSource {
   Future<Map<String, dynamic>> getPatientDetails(String patientId);
 
   Future<List<dynamic>> getPatientSessions(String patientId);
+
+  Future<String> getPatientTranscription(String sessionId);
 }

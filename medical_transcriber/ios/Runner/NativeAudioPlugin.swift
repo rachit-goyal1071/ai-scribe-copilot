@@ -81,7 +81,9 @@ class NativeAudioPlugin: NSObject, FlutterPlugin {
         case "stopRecording":
             if let args = call.arguments as? [String: Any],
             let isLast = args["isLast"] as? Bool {
+            NativeAudioManager.shared.pauseRecording()
                 NativeAudioManager.shared.stopRecording(isLast: isLast)
+                NativeAudioManager.shared.resetSession()
             }
             result(nil)
 

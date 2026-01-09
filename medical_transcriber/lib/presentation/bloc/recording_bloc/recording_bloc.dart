@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import'package:bloc/bloc.dart';
+import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/native/native_audio_service.dart';
@@ -47,10 +48,11 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
         startTime: DateTime.now().toIso8601String(),
         templateId: "",
       );
-      // emit(RecordingSessionCreated(sessionId!));
-    emit(state.copyWith(status: RecordingStatus.recording));
+      emit(state.copyWith(status: RecordingStatus.recording));
     } catch (err) {
-      print("Error creating session: $err");
+      if (kDebugMode) {
+        debugPrint('RecordingBloc: createSession failed: $err');
+      }
     }
 
     ensureMicPermission();
@@ -75,7 +77,9 @@ class RecordingBloc extends Bloc<RecordingEvent, RecordingState> {
       add(AudioRouteChangedEvent(route));
     });
 
-    print(sessionId);
+    if (kDebugMode) {
+      debugPrint('RecordingBloc: startRecording sessionId=$sessionId');
+    }
     await _native.startRecording(sessionId!);
   }
 
