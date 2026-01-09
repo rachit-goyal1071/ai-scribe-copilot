@@ -117,6 +117,12 @@ def process_session_audio(session_id: str, db_session):
     print(f"[PIPELINE] Session {session_id} transcription completed.")
 
 
+@router.get("/session-transcript/{session_id}")
+def get_session_transcript(session_id: str, db: Session = Depends(get_db)):
+    session = process_session_audio(db, session_id)
+    return {"transcript": session.transcript}
+
+
 @router.get("/session-audio/{session_id}", response_class=FileResponse)
 def get_session_audio(session_id: str, db: Session = Depends(get_db)):
     # 1. Fetch chunks

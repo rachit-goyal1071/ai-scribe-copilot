@@ -2,9 +2,9 @@ from minio import Minio
 import os
 from datetime import timedelta
 
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "142.93.211.149:9000")
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "142.93.213.55:9000")
 
-PUBLIC_MINIO_ENDPOINT = os.getenv("PUBLIC_MINIO_ENDPOINT", "142.93.211.149:9000")
+PUBLIC_MINIO_ENDPOINT = os.getenv("PUBLIC_MINIO_ENDPOINT", "142.93.213.55:9000")
 
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minio")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minio123")
@@ -27,7 +27,7 @@ def get_presigned_upload(gcs_path: str):
     gcs_path example: sessions/sessionId/chunk_1.wav
     """
 
-    MINIO_ANDROID_URL = os.getenv("MINIO_ANDROID_URL", "192.168.29.101:9000")
+    MINIO_ANDROID_URL = os.getenv("MINIO_ANDROID_URL", "142.93.213.55:9000")
 
     # Generate presigned URL
     signed_url = client.presigned_put_object(

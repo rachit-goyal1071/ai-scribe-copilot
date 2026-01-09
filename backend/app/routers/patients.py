@@ -40,4 +40,4 @@ def patient_details(patientId: str, db: Session = Depends(get_db)):
 @router.get("/fetch-session-by-patient/{patientId}")
 def fetch_session(patientId: str, db: Session = Depends(get_db)):
     sessions = crud.get_sessions_for_patient(db, patientId)
-    return {"sessions": sessions}
+    return {"sessions": sessions} 
