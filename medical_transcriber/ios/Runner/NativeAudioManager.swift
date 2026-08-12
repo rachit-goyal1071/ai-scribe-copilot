@@ -212,4 +212,15 @@ class NativeAudioManager: NSObject {
         finalizeChunk(isLast: isLast)
         try? session.setActive(false)
     }
+
+    func resetSession() {
+        NotificationCenter.default.removeObserver(self)
+
+        engine = nil
+        file = nil
+        sessionId = ""
+        chunkNumber = 0
+        chunkStartTime = 0
+        isPaused = false
+    }
 }

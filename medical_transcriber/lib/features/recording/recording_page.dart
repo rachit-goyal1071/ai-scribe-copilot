@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medical_transcriber/features/recording/widgets/mic_animation.dart';
 
 import '../../presentation/bloc/patient_bloc/patient_bloc.dart';
 import '../../presentation/bloc/recording_bloc/recording_bloc.dart';
@@ -75,31 +76,7 @@ class _RecordingPageState extends State<RecordingPage>
                 children: [
                   const SizedBox(height: 30),
 
-                  // ---------------- MIC ANIMATION ----------------
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                    height: 150 + (level * 80),
-                    width: 150 + (level * 80),
-                    decoration: BoxDecoration(
-                      color: status == RecordingStatus.paused
-                          ? Colors.grey.withOpacity(0.15)
-                          : Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.15 + level * 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      status == RecordingStatus.paused
-                          ? Icons.mic_off_rounded
-                          : Icons.mic_rounded,
-                      size: 80,
-                      color: status == RecordingStatus.paused
-                          ? Colors.grey
-                          : Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
+                  MicAnimation(level: int.parse((level*4).ceil().toString())),
 
                   const SizedBox(height: 30),
 
@@ -158,7 +135,7 @@ class _RecordingPageState extends State<RecordingPage>
 
                   FilledButton.tonalIcon(
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red.withOpacity(0.15),
+                      backgroundColor: Colors.red.withAlpha(35),
                       foregroundColor: Colors.redAccent,
                     ),
                     icon: const Icon(Icons.stop_rounded),

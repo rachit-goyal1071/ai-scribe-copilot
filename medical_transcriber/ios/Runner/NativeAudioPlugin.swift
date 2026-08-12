@@ -1,8 +1,7 @@
 import Flutter
 import AVFoundation
 
-@objc(NativeAudioPlugin)
-class NativeAudioPlugin: NSObject, FlutterPlugin {
+@objc(NativeAudioPlugin) class NativeAudioPlugin: NSObject, FlutterPlugin {
 
     // EventChannel sinks
     static var audioLevelSink: FlutterEventSink?
@@ -10,6 +9,7 @@ class NativeAudioPlugin: NSObject, FlutterPlugin {
     static var chunkSink: FlutterEventSink?
 
     // Required registration entry point
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = NativeAudioPlugin()
 
@@ -43,11 +43,12 @@ class NativeAudioPlugin: NSObject, FlutterPlugin {
     }
 
     // Handle method calls from Dart
+
     func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "startRecording":
-            if let args = call.arguments as? [String: Any],
-            let sessionId = args["sessionId"] as? String {
+            if let args = call.arguments as ? [String: Any],
+            let sessionId = args["sessionId"] as ?String {
                 do {
                     try NativeAudioManager.shared.startRecording(sessionId: sessionId)
                     result(nil)
@@ -79,9 +80,9 @@ class NativeAudioPlugin: NSObject, FlutterPlugin {
             result(nil)
 
         case "stopRecording":
-            if let args = call.arguments as? [String: Any],
-            let isLast = args["isLast"] as? Bool {
-            NativeAudioManager.shared.pauseRecording()
+            if let args = call.arguments as ? [String: Any],
+            let isLast = args["isLast"] as ?Bool {
+                NativeAudioManager.shared.pauseRecording()
                 NativeAudioManager.shared.stopRecording(isLast: isLast)
                 NativeAudioManager.shared.resetSession()
             }
@@ -92,41 +93,31 @@ class NativeAudioPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    // MARK: - Helpers used by NativeAudioManager / ChunkedAudioRecorder
+    // MARK: - Helpers used by NativeAudioManager
 
     /// Called from NativeAudioManager.emitLevel(...)
+
     static func emitAudioLevel(_ level: Float) {
         // Flutter can handle Double/NSNumber
-        audioLevelSink?(Double(level))
+        audioLevelSink ?(Double(level))
     }
 
     /// Called from NativeAudioManager.handleRouteChange(...)
+    /// Emits a plain String to match the Android side and the Dart cast in NativeAudioService.audioRoutes()
+
     static func emitRouteChange(_ route: String) {
-        routeSink?(["route": route])
+        routeSink ?(route)
     }
 
     /// Called from NativeAudioManager.finalizeChunk(...)
+
     static func emitChunkEvent(url: URL, chunkNumber: Int, isLast: Bool) {
         let payload: [String: Any] = [
-            "filePath": url.path,        // or url.absoluteString if you prefer
+            "filePath": url.path, // or url.absoluteString if you prefer
             "chunkNumber": chunkNumber,
             "isLast": isLast
         ]
-        chunkSink?(payload)
-    }
-
-    // Legacy names used by ChunkedAudioRecorder (so it compiles without change)
-    static func sendLevel(_ value: Double) {
-        audioLevelSink?(value)
-    }
-
-    static func sendChunk(filePath: String, chunkNumber: Int, isLast: Bool) {
-        let payload: [String: Any] = [
-            "filePath": filePath,
-            "chunkNumber": chunkNumber,
-            "isLast": isLast
-        ]
-        chunkSink?(payload)
+        chunkSink ?(payload)
     }
 }
 
